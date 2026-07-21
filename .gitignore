@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+# local data + trained artifacts are never committed
+data/
+*.parquet
+*.csv
+!tests/**/*.csv
+models_store/
+*.joblib
+*.pkl
+.pytest_cache/

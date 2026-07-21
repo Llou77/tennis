@@ -1,0 +1,43 @@
+# Central configuration. Copy to config/config.yaml (gitignored) and edit.
+
+# Only these tournament tiers are ever predicted on.
+allowed_tiers: [ATP250, ATP500, ATP1000, GrandSlam]
+
+data:
+  root: data                     # local data store (gitignored)
+  format: parquet
+
+ingestion:
+  historical:
+    source: sackmann             # JeffSackmann/tennis_atp
+    from_year: 2000
+  odds:
+    provider: the-odds-api       # placeholder; set ODDS_API_KEY in .env
+    bookmakers: [pinnacle, bet365]
+  weather:
+    provider: open-meteo         # venue lat/lon -> match-time conditions
+
+features:
+  elo:
+    k_factor: 32
+    surface_weight: 0.5          # blend overall vs surface-specific elo
+  form:
+    lookback_days: 90
+
+models:
+  outcome:
+    algo: lightgbm               # baseline fallback: elo_logistic
+    calibrate: true              # isotonic/Platt — calibration is mandatory for betting
+  closeness:
+    label: games_margin          # see tennisbet/models/closeness/labels.py for options
+    algo: lightgbm
+
+betting:
+  bankroll: 1000
+  staking: fractional_kelly      # flat | kelly | fractional_kelly
+  kelly_fraction: 0.25
+  min_edge: 0.03                 # only bet when model_p - implied_p exceeds this
+  devig: proportional            # remove bookmaker overround before comparison
+
+news:
+  sources: []                    # RSS/API feeds; enrichment module (built last)
