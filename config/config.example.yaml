@@ -29,7 +29,10 @@ models:
     algo: lightgbm               # baseline fallback: elo_logistic
     calibrate: true              # isotonic/Platt — calibration is mandatory for betting
   closeness:
-    label: games_margin          # see tennisbet/models/closeness/labels.py for options
+    # Compute ALL candidate labels and compare them under one fixed protocol
+    # (see tennisbet/models/closeness/compare.py). Guards against metric-shopping.
+    labels: [total_games, games_margin, competitiveness_index, went_to_deciding_set]
+    primary_label: total_games   # the tradeable label that feeds value bets
     algo: lightgbm
 
 betting:
