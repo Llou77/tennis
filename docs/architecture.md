@@ -36,7 +36,8 @@ model code is label-agnostic.
 ## Roadmap
 
 - **P0 (done):** scaffold, contracts, betting math + tests.
-- **P1:** Sackmann ingest + Elo features + Elo-logistic baseline outcome model.
+- **P1 (done):** Sackmann ingest + Elo/surface-Elo + baseline outcome model +
+  walk-forward evaluation. See `docs/p1_baseline.md`.
 - **P2:** odds ingest + de-vig + walk-forward backtest vs closing line; calibration.
 - **P3:** gradient-boosted outcome model; feature expansion.
 - **P4:** closeness model on the chosen label.

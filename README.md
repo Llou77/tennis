@@ -49,9 +49,19 @@ Per-module deps are optional extras so you can install just what you touch:
 
 ## Status
 
-Scaffold. Contracts, wiring, betting math and its tests are real; ingestion,
-features and the models are interface stubs. See `docs/architecture.md` for the
-build order and the honest take on what actually moves the needle.
+**P1 complete.** Real and working: contracts, Sackmann ingest (tier filtering,
+canonical player ordering, score parsing), Elo + surface Elo, the baseline
+outcome model, walk-forward evaluation, and the betting math — **57 tests passing**. Still stubs: form/serve-return/H2H features, the closeness model,
+odds ingestion, and news.
+
+Try it offline in one command:
+
+```bash
+python -m tennisbet p1 --synthetic --start-season 2016
+```
+
+See `docs/p1_baseline.md` for results and how to run on real data, and
+`docs/architecture.md` for the roadmap.
 
 ## Disclaimer
 
