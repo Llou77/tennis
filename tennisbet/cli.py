@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import argparse
 
-STAGES = ["ingest", "features", "train", "predict", "value", "news", "pipeline", "p1"]
+STAGES = ["ingest", "features", "train", "predict", "value", "news", "pipeline", "p1", "p2"]
 
 
 def _load_df(args):
@@ -46,6 +46,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--algo", default="logistic", choices=["logistic", "lightgbm"])
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--out", default=None, help="write the match table to parquet")
+    p.add_argument("--odds-dir", default=None,
+                   help="folder of tennis-data.co.uk season files (xls/xlsx)")
+    p.add_argument("--book", default="pinnacle",
+                   choices=["pinnacle", "bet365", "max", "avg"])
+    p.add_argument("--min-edge", type=float, default=0.03)
+    p.add_argument("--baseline", action="store_true",
+                   help="score raw Elo instead of a fitted model")
     args = p.parse_args(argv)
 
     if args.stage == "ingest":
@@ -56,6 +63,33 @@ def main(argv: list[str] | None = None) -> int:
         if args.out:
             df.to_parquet(args.out, index=False)
             print(f"wrote {args.out}")
+        return 0
+
+    if args.stage == "p2":
+        from .pipeline.p2_value import P2Config, format_report, run
+        df = _load_df(args)
+        if args.synthetic:
+            from .ingestion.synthetic import generate_odds
+            from .features.elo import compute_elo_features
+            feats, _ = compute_elo_features(df)
+            df = generate_odds(df.join(feats[["elo_blend_prob_a"]]))
+            df = df.drop(columns=["elo_blend_prob_a"])
+        else:
+            from .ingestion.linking import link_odds
+            from .ingestion.odds_historical import load_odds
+            years = sorted(set(df["match_date"].dt.year))
+            odds = load_odds(years, local_dir=args.odds_dir)
+            if len(odds) == 0:
+                raise SystemExit(
+                    "No odds loaded. Download the season files from\n"
+                    "  http://www.tennis-data.co.uk/alldata.php\n"
+                    "into a folder and pass --odds-dir, or use --synthetic.")
+            df, report = link_odds(df, odds)
+            print(report.format()); print()
+        out = run(df, P2Config(start_season=args.start_season, book=args.book,
+                               min_edge=args.min_edge, algo=args.algo,
+                               use_baseline=args.baseline))
+        print(format_report(out))
         return 0
 
     if args.stage == "p1":

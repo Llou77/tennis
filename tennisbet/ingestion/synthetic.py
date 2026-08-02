@@ -95,3 +95,44 @@ def generate(n_players: int = 200, seasons: tuple[int, int] = (2010, 2024),
     df["rank_b"] = df["player_b_id"].map(order).astype(float)
     truth = pd.DataFrame({"player_id": pids, "skill": skill})
     return df, truth
+
+
+def generate_odds(df, vig: float = 0.05, market_skill: float = 0.85,
+                  seed: int = 7, coverage: float = 0.93):
+    """Attach a simulated bookmaker line to a synthetic match table.
+
+    `market_skill` in [0,1] controls how much of the true signal the book sees.
+    At 1.0 the market is perfectly efficient and NO model can beat it — the
+    honest default is slightly below 1, matching a real market that is very good
+    but not omniscient. `coverage` drops some rows, as real odds feeds do.
+    """
+    import numpy as np
+    import pandas as pd
+
+    rng = np.random.default_rng(seed)
+    n = len(df)
+    # Recover a true-ish probability from the Elo-free ground truth we do have:
+    # use the realized label smoothed by a latent signal.
+    if "elo_blend_prob_a" in df.columns:
+        p_ref = df["elo_blend_prob_a"].to_numpy(dtype=float)
+    else:
+        p_ref = np.full(n, 0.5)
+    pc = np.clip(p_ref, 1e-3, 1 - 1e-3)
+    logit = np.log(pc / (1 - pc))
+    # Noise MUST vanish as skill -> 1, otherwise "efficient market" is still
+    # beatable and the control test silently passes on a broken premise.
+    sigma = 1.5 * (1.0 - market_skill)
+    p_book = 1 / (1 + np.exp(-(logit + rng.normal(0, sigma, n) if sigma > 0 else logit)))
+    p_book = np.clip(p_book, 0.05, 0.95)
+
+    over = 1.0 + vig
+    out = df.copy()
+    odds_a = 1.0 / (p_book * over)
+    odds_b = 1.0 / ((1 - p_book) * over)
+    keep = rng.random(n) < coverage
+    for book, jitter in (("pinnacle", 0.0), ("bet365", 0.02), ("max", -0.015), ("avg", 0.01)):
+        oa = odds_a * (1 - jitter)
+        ob = odds_b * (1 - jitter)
+        out[f"odds_a_{book}"] = np.where(keep, oa, np.nan)
+        out[f"odds_b_{book}"] = np.where(keep, ob, np.nan)
+    return out

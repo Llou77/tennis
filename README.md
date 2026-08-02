@@ -49,19 +49,22 @@ Per-module deps are optional extras so you can install just what you touch:
 
 ## Status
 
-**P1 complete.** Real and working: contracts, Sackmann ingest (tier filtering,
-canonical player ordering, score parsing), Elo + surface Elo, the baseline
-outcome model, walk-forward evaluation, and the betting math — **57 tests passing**. Still stubs: form/serve-return/H2H features, the closeness model,
-odds ingestion, and news.
+**P1 + P2 complete.** Real and working: contracts, Sackmann ingest (tier
+filtering, canonical player ordering, score parsing), Elo + surface Elo, the
+baseline outcome model, walk-forward evaluation, odds ingestion from
+tennis-data.co.uk, cross-source match linking, and the closing-line backtest
+with a null-test guard — **92 tests passing**. Still stubs:
+form/serve-return/H2H features, the closeness model, and news.
 
-Try it offline in one command:
+Try it offline in two commands:
 
 ```bash
-python -m tennisbet p1 --synthetic --start-season 2016
+python -m tennisbet p1 --synthetic --start-season 2016   # Elo baseline
+python -m tennisbet p2 --synthetic --start-season 2016   # vs the closing line
 ```
 
-See `docs/p1_baseline.md` for results and how to run on real data, and
-`docs/architecture.md` for the roadmap.
+See `docs/p1_baseline.md` and `docs/p2_closing_line.md` for results and how to
+run on real data, and `docs/architecture.md` for the roadmap.
 
 ## Disclaimer
 

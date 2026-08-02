@@ -38,7 +38,8 @@ model code is label-agnostic.
 - **P0 (done):** scaffold, contracts, betting math + tests.
 - **P1 (done):** Sackmann ingest + Elo/surface-Elo + baseline outcome model +
   walk-forward evaluation. See `docs/p1_baseline.md`.
-- **P2:** odds ingest + de-vig + walk-forward backtest vs closing line; calibration.
+- **P2 (done):** odds ingest (tennis-data.co.uk), cross-source linking, de-vig,
+  closing-line backtest with a null-test guard. See `docs/p2_closing_line.md`.
 - **P3:** gradient-boosted outcome model; feature expansion.
 - **P4:** closeness model on the chosen label.
 - **P5:** news enrichment.
